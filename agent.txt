@@ -1,0 +1,235 @@
+ const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
+//Simple format for params and returns
+//function addTwoNums ({a,b})
+//{
+//  return { result: a + b };
+//}
+
+//Scrape url
+async function web_search1({startUrl1,maxPages1 = 10}) {
+//browser in bg invisible
+let browser1;
+try{
+  browser1 = await puppeteer.launch({
+    headless:true
+  });
+
+  const queue1 = [startUrl1];
+  //unique links and to avoid re visit of the same links again 
+  const visitedLinks1 = new Set();
+const siteData1 = [];
+
+//Origin without any / slashes or other page go to main page
+const baseOrigin1 = new URL(startUrl1).origin;
+
+//Loop till no oen is in que and untile it has not reach limit of maxpage
+while(queue1.length > 0 && visitedLinks1.size < maxPages1)
+{
+  const currentUrl1 = queue1.shift();
+
+//skip link if already visite real use of visitedLinks
+if(visitedLinks1.has(currentUrl1)) continue;
+
+//Makr current url as visited once its done
+visitedLinks1.add(currentUrl1);
+
+const page1 = await browser1.newPage();
+try{
+await page1.goto(currentUrl1,{waitUntil:'networkidle2',timeout:30000});
+
+const title1 = await page1.title();
+
+const text1 = await page1.evaluate(()=>document.body.innerText.trim());
+
+//Link extractions
+
+const internalLinks1 = await page1.evaluate((origin1)=>
+{
+return Array.from(document.querySelectorAll('a[href]'))
+.map(a1 => a1.href)
+.filter(href1 => href1.startsWith(origin1))
+.map(href1=> href1.split('#')[0]);
+
+},baseOrigin1);
+
+siteData1.push({
+  url:currentUrl1,
+  title:title1,
+  text:text1,
+  content:text1.length,
+  discoverLinks:internalLinks1,
+  pages:internalLinks1.length,
+})
+
+for(const link1 of internalLinks1)
+{
+  if(!visitedLinks1.has(link1) && !queue1.includes(link1))
+  {
+    queue1.push(link1)
+  }
+}
+
+
+}
+
+catch(err1)
+{
+return err1.message
+}
+finally{
+  //close individual tab to preserve ram
+  await page1.close()
+}
+
+//res.status(201).json({
+//  message:`Successfully read your site 👍 Title:- ${siteData.title} , 👍 Content length:- ${siteData.content} 👍 Total pages :- ${siteData.pages}`,
+//  type:'success',
+//  devModeData:siteData,
+//})
+
+
+}
+
+return {
+  title:siteData1[0].title,
+  url:siteData1[0].url,
+  content:siteData1[0].text,
+  internalLinks:siteData1[0].discoverLinks
+};
+}
+catch(err1)
+{
+  return err1.message
+}
+
+
+}
+
+//console.log(await web_search1('https://www.omtechsoftware.com'))
+
+//list of function for ai with actual name 
+const functionMap = {
+web_search1:web_search1
+}
+
+//tool schema for gemini
+const tools = [
+  {
+    functionDeclarations: [
+      {
+        name: "web_search1",
+        description: "Extracts content from a specific, fully-qualified web URL provided directly in the text. Do NOT use this for general internet queries or web searches without a direct link.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+           startUrl1: { type: Type.STRING, description: "The complete  HTTPS URL to scrape (e.g., https://example.com)" },
+            maxPages1 : {type:Type.NUMBER , description : "Maximum pages to scrape. Default is 10."},
+          },
+          required: ["startUrl1"],
+        },
+      },
+    ],
+  },
+];
+
+
+ async function askGemini(prompt) {
+  
+
+  const REDIS_URL = "rediss://default:ARbPAAImcDIyNjM3OGZhYzcwZWU0ZjVmYTcxZmZjZjAxODA1MDI4N3AyNTgzOQ@definite-goblin-5839.upstash.io:6379";
+  const redisClient = createClient({ url: REDIS_URL });
+
+redisClient.on("error", (err) => console.error("Redis Error:", err));
+  await redisClient.connect();
+
+  const historyKey =`chat:history:${uidentity}`;
+
+try{
+  //getting rawHistory from redis with its key
+const rawHistory = await redisClient.get(historyKey);
+    let history = rawHistory ? JSON.parse(rawHistory) : [];
+
+    //push user messages into the histoy
+    history.push({ role: "user", parts: [{ text: prompt }] });
+
+//only prompt
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash-lite",
+      config: {tools ,
+         systemInstruction: [
+          //get the basic context from db
+        'You are a general assistant',
+        'Your Name is tungtung',
+      ],
+      },
+      contents: history,
+
+    });
+
+//Check if Gemini requested a function call
+  const call = response.functionCalls?.[0];
+  if(call)
+  {
+    const { name, args } = call;
+    console.log(`Gemini called -> ${name} with parameters:`, args);
+ 
+
+ //   if (typeof functionMap[name] !== "function") {
+//  throw new Error(`Function "${name}" is not defined inside functionMap. Available keys: ${Object.keys(functionMap).join(", ")}`);
+//}
+ //Run the function locally
+   const functionResult = await functionMap[name](args);
+history.push({
+    role: "user",
+    parts: [{
+      functionResponse: {
+        name: name,
+        response: functionResult,
+      },
+    }],
+  });
+
+const finalResponse = await ai.models.generateContent({
+      model: "gemini-3.5-flash-lite",
+      contents:history,
+    });
+
+    history.push(finalResponse.candidates[0].content);
+const fbotAnswer = finalResponse.text;
+
+res.status(201).json({
+  message:fbotAnswer,
+  type:'bot',
+})
+  }
+else{
+
+const botAnswer = response.text;
+
+
+res.status(201).json({
+  message:botAnswer,
+  type:'bot'
+})
+
+    // Append Gemini's output to history
+history.push(response.candidates[0].content);
+
+}
+
+//save entire updated chat history
+await redisClient.set(historyKey, JSON.stringify(history));
+
+
+}
+
+finally{
+await redisClient.disconnect();
+}
+  
+
+}
+
+
+askGemini(umsg);
+

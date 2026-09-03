@@ -1,0 +1,114 @@
+const express = require('express');
+const puppeteer = require('puppeteer-core');
+
+const app = express();
+
+// Path to Termux's compiled Chromium binary
+const TERMUX_CHROMIUM_PATH = '/data/data/com.termux/files/usr/bin/chromium-browser';
+
+app.get('/crawl', async (req, res) => {
+  const startUrl = req.query.url;
+  // Parse maxPages parameter, defaulting to 5 pages if not supplied
+  const maxPages = parseInt(req.query.maxPages, 10) || 5;
+
+  if (!startUrl) {
+    return res.status(400).json({ error: 'url parameter is required' });
+  }
+
+  let browser;
+  try {
+    // Launch Termux ARM Chromium with essential flags for Android
+    browser = await puppeteer.launch({
+      executablePath: TERMUX_CHROMIUM_PATH,
+      headless: true,
+      args: [
+        '--no-sandbox',                  // Bypasses Linux sandbox restrictions on Android
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',       // Prevents shared memory crashes in mobile containers
+        '--disable-gpu'                  // Saves hardware processing on Termux
+      ]
+    });
+
+    const queue = [startUrl];            // Processing queue for incoming URLs
+    const visitedUrls = new Set();       // Prevents infinite loops and duplicate processing
+    const crawledData = [];             // Stores extracted page payload results
+
+    // Resolve base origin domain to enforce same-domain crawling
+    const baseOrigin = new URL(startUrl).origin;
+
+    // Loop through queue until target page count is reached or queue empties
+    while (queue.length > 0 && visitedUrls.size < maxPages) {
+      const currentUrl = queue.shift();
+
+      // Skip URL if it has already been processed
+      if (visitedUrls.has(currentUrl)) continue;
+
+      // Mark current URL as visited
+      visitedUrls.add(currentUrl);
+
+      const page = await browser.newPage();
+
+      try {
+        // Navigate and wait until network connections drop to 2 or fewer (SPA data fetched)
+        await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+
+        // Extract title
+        const title = await page.title();
+
+        // Extract all visible body text
+        const text = await page.evaluate(() => document.body.innerText.trim());
+
+        // Extract and resolve all internal domain anchor links
+        const internalLinks = await page.evaluate((origin) => {
+          return Array.from(document.querySelectorAll('a[href]'))
+            .map(a => a.href)                                  // Get absolute URL resolved by browser
+            .filter(href => href.startsWith(origin))            // Restrict to same root domain
+            .map(href => href.split('#')[0]);                  // Remove URL fragment identifiers
+        }, baseOrigin);
+
+        // Record page payload
+        crawledData.push({
+          url: currentUrl,
+          title,
+          textLength: text.length,
+          text,
+          discoveredLinksCount: internalLinks.length
+        });
+
+        // Push new unvisited links into processing queue
+        for (const link of internalLinks) {
+          if (!visitedUrls.has(link) && !queue.includes(link)) {
+            queue.push(link);
+          }
+        }
+
+      } catch (pageErr) {
+        // Log individual page navigation error and continue crawling remainder of queue
+        console.error(`Failed to crawl ${currentUrl}:`, pageErr.message);
+      } finally {
+        // Close individual tab to free up RAM on Android
+        await page.close();
+      }
+    }
+
+    // Return collected crawl results
+    return res.status(200).json({
+      message: `Crawling completed successfully.`,
+      totalPagesCrawled: crawledData.length,
+      maxPagesLimit: maxPages,
+      data: crawledData
+    });
+
+  } catch (err) {
+    console.error('Crawler Engine Error:', err.message);
+    return res.status(500).json({
+      error: 'Crawler execution failed',
+      details: err.message
+    });
+  } finally {
+    // Ensure browser process is destroyed on completion
+    if (browser) await browser.close();
+  }
+});
+
+app.listen(3000, () => console.log('Puppeteer Termux crawler running on port 3000'));
