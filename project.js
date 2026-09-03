@@ -10,10 +10,10 @@ const nodemailer = require('nodemailer');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const {GoogleGenAI , Type} = require('@google/genai');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 //const redis = require('redis');
 const { createClient } = require('redis');
-const chromium = require('chrome-aws-lambda');
+const chromium = require('@sparticuz/chromium');
 const saltRounds = 12;
 
 // Secure
@@ -227,7 +227,7 @@ try{
   browser1 = await puppeteer.launch({
     args:chromium.agrs,
      executablePath: await chromium.executablePath,
-    headless:true
+    headless:chromium.headless,
   });
 
   const queue1 = [startUrl1];
@@ -626,7 +626,7 @@ try{
   browser = await puppeteer.launch({
     args:chromium.agrs,
      executablePath: await chromium.executablePath,
-    headless:true
+    headless:chromium.headless,
   });
 
   const queue = [startUrl];
