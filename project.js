@@ -13,7 +13,7 @@ const {GoogleGenAI , Type} = require('@google/genai');
 const puppeteer = require('puppeteer-core');
 //const redis = require('redis');
 const { createClient } = require('redis');
-const chromium = require('@sparticuz/chromium');
+//const chromium = require('@sparticuz/chromium');
 const saltRounds = 12;
 
 // Secure
@@ -225,9 +225,9 @@ async function web_search1({startUrl1,maxPages1 = 10}) {
 let browser1;
 try{
   browser1 = await puppeteer.launch({
-    args:chromium.agrs,
-     executablePath: await chromium.executablePath,
-    headless:chromium.headless,
+executablePath: '/usr/bin/chromium',
+headless: true,
+args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
 
   const queue1 = [startUrl1];
@@ -624,9 +624,9 @@ async function CrawlSite(startUrl,maxPages) {
 let browser;
 try{
   browser = await puppeteer.launch({
-    args:chromium.agrs,
-     executablePath: await chromium.executablePath,
-    headless:chromium.headless,
+    executablePath: '/usr/bin/chromium',
+headless: true,
+args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
 
   const queue = [startUrl];
