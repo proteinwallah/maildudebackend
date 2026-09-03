@@ -13,7 +13,7 @@ const {GoogleGenAI , Type} = require('@google/genai');
 const puppeteer = require('puppeteer');
 //const redis = require('redis');
 const { createClient } = require('redis');
-
+const chromium = require('chrome-aws-lambda');
 const saltRounds = 12;
 
 // Secure
@@ -225,6 +225,8 @@ async function web_search1({startUrl1,maxPages1 = 10}) {
 let browser1;
 try{
   browser1 = await puppeteer.launch({
+    args:chromium.agrs,
+     executablePath: await chromium.executablePath,
     headless:true
   });
 
@@ -622,6 +624,8 @@ async function CrawlSite(startUrl,maxPages) {
 let browser;
 try{
   browser = await puppeteer.launch({
+    args:chromium.agrs,
+     executablePath: await chromium.executablePath,
     headless:true
   });
 

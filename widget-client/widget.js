@@ -2,7 +2,7 @@
 (function ()
 {
 const cl_token = document.currentScript.dataset.token;
-const apiUrl = 'https://mdudebck.vercel.app/'
+const apiUrl = 'https://maildudebackend.onrender.com/'
 
 if(!cl_token) return;
 
