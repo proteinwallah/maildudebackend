@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
+    "@sparticuz/chromium": "^147.0.0",
     "axios": "^1.19.0",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
