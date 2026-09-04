@@ -651,8 +651,9 @@ if(visitedLinks.has(currentUrl)) continue;
 visitedLinks.add(currentUrl);
 
 const page = await browser.newPage();
+page.setDefaultNavigationTimeout(60000);
 try{
-await page.goto(currentUrl,{waitUntil:'networkidle2',timeout:30000});
+await page.goto(currentUrl,{waitUntil:'networkidle2',timeout:60000});
 
 const title = await page.title();
 
