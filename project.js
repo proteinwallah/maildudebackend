@@ -225,7 +225,7 @@ async function web_search1({startUrl1,maxPages1 = 10}) {
 let browser1;
 try{
   browser1 = await puppeteer.launch({
-executablePath: '/usr/bin/google-chrome-stable',
+executablePath: '/usr/bin/chromium-browser',
 headless: true,
 args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
@@ -624,7 +624,7 @@ async function CrawlSite(startUrl,maxPages) {
 let browser;
 try{
   browser = await puppeteer.launch({
-    executablePath: '/usr/bin/google-chrome-stable',
+    executablePath:'/usr/bin/chromium-browser',
 headless: true,
 args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
