@@ -693,7 +693,9 @@ catch(err)
 {
 res.status(500).json({
   message:'Error occured while reading your site',
+  error:err,
   type:'error'
+  
 })
 }
 finally{
