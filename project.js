@@ -809,7 +809,7 @@ res.status(500).json({
 
 }
 
-  CrawlSite(cleanUrl,20);
+  CrawlSite(cleanUrl,1);
 
 })
 
