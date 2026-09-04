@@ -653,7 +653,7 @@ visitedLinks.add(currentUrl);
 const page = await browser.newPage();
 page.setDefaultNavigationTimeout(60000);
 try{
-await page.goto(currentUrl,{waitUntil:'networkidle2',timeout:60000});
+await page.goto(currentUrl,{waitUntil:'domcontentloaded',timeout:60000});
 
 const title = await page.title();
 
@@ -692,21 +692,26 @@ for(const link of internalLinks)
 
 catch(err)
 {
-res.status(500).json({
-  message:'Error occured while reading your site',
-  error:err,
-  type:'error'
-  
-})
+console.error(`Error crawling page ${currentUrl}:`, err);
 }
 finally{
   //close individual tab to preserve ram
   await page.close()
 }
+}
 
+if(browser)
+{
+  await browser.close();
+}
 
-
-
+//Throwing error if siteData is empty non-readed
+if (siteData.length === 0) {
+        return res.status(500).json({
+          message: 'Error occurred while reading your site (No site data captured)',
+          type: 'error'
+        });
+      }
 
 
 //DB_AREA_AFTER_SCRAPE=========================================
@@ -790,8 +795,7 @@ res.status(500).json({
 }
 //============================================================
 
-
-}
+      
 
 }
 catch(err)
