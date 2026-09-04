@@ -220,7 +220,7 @@ const systemConf = {
 //}
 
 //Scrape url
-async function web_search1({startUrl1,maxPages1 = 10}) {
+async function web_search1({startUrl1,maxPages1 = 1}) {
 //browser in bg invisible
 let browser1;
 try{
@@ -251,8 +251,9 @@ if(visitedLinks1.has(currentUrl1)) continue;
 visitedLinks1.add(currentUrl1);
 
 const page1 = await browser1.newPage();
+page.setDefaultNavigationTimeout(60000)
 try{
-await page1.goto(currentUrl1,{waitUntil:'networkidle2',timeout:30000});
+await page1.goto(currentUrl1,{waitUntil:'domcontentloaded',timeout:30000});
 
 const title1 = await page1.title();
 
