@@ -251,7 +251,7 @@ if(visitedLinks1.has(currentUrl1)) continue;
 visitedLinks1.add(currentUrl1);
 
 const page1 = await browser1.newPage();
-page.setDefaultNavigationTimeout(60000)
+page1.setDefaultNavigationTimeout(60000)
 try{
 await page1.goto(currentUrl1,{waitUntil:'domcontentloaded',timeout:30000});
 
