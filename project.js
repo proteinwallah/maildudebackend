@@ -372,7 +372,7 @@ const rawHistory = await redisClient.get(historyKey);
 
 //only prompt
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       config: {tools ,
          systemInstruction: [
 JSON.stringify(systemConf)
@@ -406,7 +406,7 @@ history.push({
   });
 
 const finalResponse = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents:history,
     });
 
