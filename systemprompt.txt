@@ -1,0 +1,7 @@
+const systemConf = {
+  "bot_info": {
+    "name": `${botname}`,
+    "description": `${botdesc}`,
+    "organization": `${orgname}`,
+    "website_data": `${context}`
+  },
