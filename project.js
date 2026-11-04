@@ -354,7 +354,7 @@ const rawHistory = await redisClient.get(historyKey);
       model: "gemini-3.5-flash-lite",
       config: {tools ,
          systemInstruction: [
-JSON.stringify(systemConf)
+systemPrompt
       ],
       },
       contents: history,
