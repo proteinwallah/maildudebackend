@@ -203,6 +203,9 @@ ${context}`;
 //Scrape url
 async function web_search1({startUrl1,maxPages1 = 1}) {
 //browser in bg invisible
+console.log('agent used websearch');
+console.log('Agent inserted parameters:-',startUrl1,maxPages1);
+
 let browser1;
 try{
   browser1 = await puppeteer.launch({
