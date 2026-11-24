@@ -122,6 +122,9 @@ try{
   const fetUnameq = 'select name from tbl_users where cltoken = $1';
   const fetUnameqRes = await pool.query(fetUnameq,[clToken]);
 
+  console.log(fetUnameqRes);
+  console.log(clToken);
+
 if(fetUnameqRes.rowCount > 0)
   {
 
@@ -534,7 +537,7 @@ else{
 
 catch(err)
 {
-console.err(err);
+
   res.status(500).json({
     message:'An Error occured while resonating with host',
     type:'error',
