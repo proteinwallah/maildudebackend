@@ -541,7 +541,7 @@ catch(err)
   res.status(500).json({
     message:'An Error occured while resonating with host',
     type:'error',
-   
+   error:err,
   })
 
 }
@@ -553,6 +553,7 @@ else{
   res.status(201).json({
     message:'I am expireincing failure with Authentication , I will be back soon! Sorry 😭',
     type:'error'
+
   })
 
 }
@@ -563,7 +564,8 @@ catch(err)
 {
   res.status(500).json({
     message:'I am expireincing failure with Authentication , I will be back soon! Sorry 😭',
-    type:'error'
+    type:'error',
+    err:err
   })
 }
 //2.fetch select name from tbl_users where clToken = clToken
