@@ -320,7 +320,7 @@ const tools = [
           type: Type.OBJECT,
           properties: {
            startUrl1: { type: Type.STRING, description: "The complete  HTTPS URL to scrape (e.g., https://example.com)" },
-            maxPages1 : {type:Type.NUMBER , description : "Maximum pages to scrape. Default is 10."},
+            maxPages1 : {type:Type.NUMBER , description : "Maximum pages to scrape. Default is 1."},
           },
           required: ["startUrl1"],
         },
