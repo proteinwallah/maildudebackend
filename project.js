@@ -137,7 +137,7 @@ const tblUName = fetUnameqRes.rows[0].name.replace("@gmail", "")
 //AGENT=UNIQUE_HOST AND DEC_AI DEC_STORE BLOCK=============================
 
 try{
-const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openRouter from ${tblUName} where host = $1`;
+const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openrouter from ${tblUName} where host = $1`;
 const mainEncdecQRes = await pool.query(mainEncdecQ,[host]);
 
 if(mainEncdecQRes.rowCount > 0)
@@ -152,7 +152,7 @@ const context = mainEncdecQRes.rows[0].context;
 const botname = mainEncdecQRes.rows[0].botname;
 const botdesc = mainEncdecQRes.rows[0].botdesc;
 const orgname = mainEncdecQRes.rows[0].orgname;
-const is_openrouter = mainEncdecQRes.row[0].is_openRouter;
+const is_openrouter = mainEncdecQRes.row[0].is_openrouter;
 
 //System prompt
 const systemPrompt = `You are ${botname}, the assistant for ${orgname}. ${botdesc}
@@ -932,7 +932,7 @@ try{
   orgName varchar(250) null,
   host varchar(250) null,
   context text null,
-  is_openRouter integer not null default 0
+  is_openrouter integer not null default 0
   
 )`
 
@@ -945,7 +945,7 @@ if(setupQueryRes.command === 'CREATE')
 //Insert After Sucessfull table creation with username
 try{
  //console.log(userName)
-const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host,is_openRouter) values($1,$2,$3,$4,$5,$6,$7,$8)`;
+const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host,is_openrouter) values($1,$2,$3,$4,$5,$6,$7,$8)`;
 const insertProjectqueryRes = await pool.query(insertProjectquery,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt]);
 
 if(insertProjectqueryRes.rowCount === 1)
