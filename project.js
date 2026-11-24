@@ -138,9 +138,7 @@ const tblUName = fetUnameqRes.rows[0].name.replace("@gmail", "")
         .replaceAll("@", "");
 
 //AGENT=UNIQUE_HOST AND DEC_AI DEC_STORE BLOCK=============================
-console.log(tblUName);
-console.log(clToken);
-console.log(host);
+
 try{
 const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openrouter from ${tblUName} where host = $1`;
 const mainEncdecQRes = await pool.query(mainEncdecQ,[host]);
@@ -203,8 +201,9 @@ ${context}`;
 //Scrape url
 async function web_search1({startUrl1,maxPages1 = 1}) {
 //browser in bg invisible
-console.log('agent used websearch');
-console.log('Agent inserted parameters:-',startUrl1,maxPages1);
+//===Debug Logs====[!IMPORTANT FOR PHASES]
+console.log(`agent used websearch :: ${is_openrouter}`);
+console.log(`On ${host} Agent-${$botname} made by ${tblUName}${clToken} inserted parameters for request -${umsg} of ${orgname}:-`,startUrl1,maxPages1);
 
 let browser1;
 try{
@@ -313,11 +312,12 @@ catch(err1)
 //}
 //console.log(await web_search1('https://www.omtechsoftware.com'))
 
-console.log(is_openrouter);
+
 
 switch(is_openrouter)
 {
   case 0:
+    console.log(`running Gemini-${botname} for Request : ${umsg}by:${uidentity} On ${host}+${'by:'+tblUName}+${orgname}`)
 const ai = new GoogleGenAI(dec_ai_key);
 
 
@@ -383,7 +383,7 @@ systemPrompt
   if(call)
   {
     const { name, args } = call;
-    console.log(`Gemini called -> ${name} with parameters:`, args);
+    console.log(`Raw args for Gemini Agent ${botname}+${host}+${tblUName}+${clToken} -> ${name} with parameters:`, args   +`Request ${uidentity} ::`+umsg);
  
 
  //   if (typeof functionMap[name] !== "function") {
@@ -452,7 +452,7 @@ askGemini(umsg);
   break;
 
 case 1:
-console.log('running openRouter')
+console.log(`running openRouter-${botname} for Request : ${umsg}by:${uidentity} On ${host}+${'by:'+tblUName}+${orgname}`)
 const openRouter = new OpenRouter({ apiKey: dec_ai_key });
 
 const sumTwoNumbers = tool({
@@ -463,7 +463,8 @@ const sumTwoNumbers = tool({
      maxPages1 : z.number().describe('Maximum pages to scrape. Default is 1.'),
   }),
   execute:async({startUrl1,maxPages1}) => { 
-    console.log('Raw Tool args ::',startUrl1,maxPages1);
+    //Raw arg logs [!important for starting test phases]
+    console.log(`Raw Tool args for agent ${botname}+${host}+${tblUName}-${clToken} ::`,startUrl1,maxPages1 + `Request Made by ${uidentity}::-`+umsg);
     return await web_search1({startUrl1,maxPages1}) } 
 });
 
@@ -574,7 +575,7 @@ catch(err)
   res.status(500).json({
     message:'I am expireincing failure with Authentication , I will be back soon! Sorry 😭',
     type:'error',
-    err:err
+   
   })
 }
 //2.fetch select name from tbl_users where clToken = clToken
@@ -612,7 +613,7 @@ const getUuidQuery = `select uuid,name from tbl_users where cltoken = $1`;
 
 const getUuidQueryRes = await pool.query(getUuidQuery,[clToken]);
 
-console.log(getUuidQueryRes);
+//console.log(getUuidQueryRes);
 
 if(getUuidQueryRes.rowCount > 0)
 {
