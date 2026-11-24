@@ -531,9 +531,10 @@ else{
 
 
 }
+
 catch(err)
 {
-
+console.err(err);
   res.status(500).json({
     message:'An Error occured while resonating with host',
     type:'error',
