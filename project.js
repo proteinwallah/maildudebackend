@@ -157,7 +157,7 @@ const context = mainEncdecQRes.rows[0].context;
 const botname = mainEncdecQRes.rows[0].botname;
 const botdesc = mainEncdecQRes.rows[0].botdesc;
 const orgname = mainEncdecQRes.rows[0].orgname;
-const is_openrouter = mainEncdecQRes.row[0].is_openrouter;
+const is_openrouter = mainEncdecQRes.rows[0].is_openrouter;
 
 //System prompt
 const systemPrompt = `You are ${botname}, the assistant for ${orgname}. ${botdesc}
