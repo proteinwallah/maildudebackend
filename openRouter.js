@@ -1,5 +1,5 @@
 const { OpenRouter } = require('@openrouter/sdk');
-const { callModel, tool } = require('@openrouter/agent');
+const { callModel, tool ,fromChatMessages } = require('@openrouter/agent');
 const { z } = require('zod');
 //Scraping
 const puppeteer = require('puppeteer-core');

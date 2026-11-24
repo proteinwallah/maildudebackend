@@ -15,6 +15,9 @@ const puppeteer = require('puppeteer-core');
 const { createClient } = require('redis');
 const chromium = require('@sparticuz/chromium');
 const saltRounds = 12;
+const { OpenRouter } = require('@openrouter/sdk');
+const { callModel, tool ,fromChatMessages } = require('@openrouter/agent');
+const { z } = require('zod');
 
 // Secure
 app.use(cors());
@@ -134,7 +137,7 @@ const tblUName = fetUnameqRes.rows[0].name.replace("@gmail", "")
 //AGENT=UNIQUE_HOST AND DEC_AI DEC_STORE BLOCK=============================
 
 try{
-const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context from ${tblUName} where host = $1`;
+const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openRouter from ${tblUName} where host = $1`;
 const mainEncdecQRes = await pool.query(mainEncdecQ,[host]);
 
 if(mainEncdecQRes.rowCount > 0)
@@ -149,7 +152,7 @@ const context = mainEncdecQRes.rows[0].context;
 const botname = mainEncdecQRes.rows[0].botname;
 const botdesc = mainEncdecQRes.rows[0].botdesc;
 const orgname = mainEncdecQRes.rows[0].orgname;
-
+const is_openrouter = mainEncdecQRes.row[0].is_openRouter;
 
 //System prompt
 const systemPrompt = `You are ${botname}, the assistant for ${orgname}. ${botdesc}
@@ -295,20 +298,20 @@ catch(err1)
 
 
 }
-
-
-
-
-
-
-const ai = new GoogleGenAI(dec_ai_key);
 //Simple format for params and returns
 //function addTwoNums ({a,b})
 //{
 //  return { result: a + b };
 //}
-
 //console.log(await web_search1('https://www.omtechsoftware.com'))
+
+
+
+switch(is_openrouter)
+{
+  case 0:
+const ai = new GoogleGenAI(dec_ai_key);
+
 
 //list of function for ai with actual name 
 const functionMap = {
@@ -379,7 +382,7 @@ systemPrompt
 //  throw new Error(`Function "${name}" is not defined inside functionMap. Available keys: ${Object.keys(functionMap).join(", ")}`);
 //}
  //Run the function locally
-   const functionResult = await functionMap[name](args);
+  const functionResult = await functionMap[name](args);
 history.push({
     role: "user",
     parts: [{
@@ -437,6 +440,80 @@ await redisClient.disconnect();
 
 
 askGemini(umsg);
+
+  break;
+
+case 1:
+
+const openRouter = new OpenRouter({ apiKey: dec_ai_key });
+
+const sumTwoNumbers = tool({
+  name: 'web_search1',
+  description: 'Extracts content from a specific, fully-qualified web URL provided directly in the text. Do NOT use this for general internet queries or web searches without a direct link.',
+  inputSchema: z.object({
+    startUrl1: z.string().describe('The complete  HTTPS URL to scrape (e.g., https://example.com)'),
+     maxPages1 : z.number().describe('Maximum pages to scrape. Default is 1.'),
+  }),
+  execute:async({startUrl1,maxPages1}) => { web_search1(startUrl1,maxPages1) } 
+});
+
+async function main() {
+
+const REDIS_URL = dec_store_key;
+  const redisClient1 = createClient({ url: REDIS_URL });
+
+redisClient1.on("error", (err) => console.error("Redis Error:", err));
+  await redisClient1.connect();
+
+  const historyKey1 =`chat-opnrtr:history-${botname}:${uidentity}`;
+const rawHistory1 = await redisClient1.get(historyKey1);
+    let history1 = rawHistory1 ? JSON.parse(rawHistory1) : [];
+
+    history1.push({ role: 'user', content: prompt });
+
+  
+  const result = callModel(openRouter, {
+    model: 'nvidia/nemotron-3.5-super-vl:free',
+    instructions: systemPrompt,
+    input: fromChatMessages(history1),
+    tools: [sumTwoNumbers],
+  });
+
+
+  const reply = await result.getText();
+
+  res.status(201).json({
+  message:reply,
+  type:'bot',
+  botname:botname,
+  botdesc:botdesc,
+  
+})
+
+  
+  //save history
+history1.push({ role: 'assistant', content: reply });
+await redisClient1.set(historyKey1, JSON.stringify(history1));
+
+}
+
+main().catch(
+
+  res.status(201).json({
+    message:'Error Occured with Open Router Ai.',
+    type:'error'
+  })
+
+);
+
+break;
+
+default :
+console.log("No such model exist");
+break;
+}
+
+
 
 
 
