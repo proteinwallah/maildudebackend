@@ -505,7 +505,7 @@ await redisClient1.set(historyKey1, JSON.stringify(history1));
 main().catch((err)=>
 {
 
-  console.err(err);
+  console.error(err);
 res.status(201).json({
     message:'Error Occured with Open Router Ai.',
     type:'error'
