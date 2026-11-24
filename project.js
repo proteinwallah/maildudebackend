@@ -462,7 +462,9 @@ const sumTwoNumbers = tool({
     startUrl1: z.string().describe('The complete  HTTPS URL to scrape (e.g., https://example.com)'),
      maxPages1 : z.number().describe('Maximum pages to scrape. Default is 1.'),
   }),
-  execute:async({startUrl1,maxPages1}) => { return await web_search1(startUrl1,maxPages1) } 
+  execute:async({startUrl1,maxPages1}) => { 
+    console.log('Raw Tool args ::',startUrl1,maxPages1);
+    return await web_search1({startUrl1,maxPages1}) } 
 });
 
 async function main() {
