@@ -310,7 +310,7 @@ catch(err1)
 //}
 //console.log(await web_search1('https://www.omtechsoftware.com'))
 
-
+console.log(is_openrouter);
 
 switch(is_openrouter)
 {
@@ -474,7 +474,7 @@ redisClient1.on("error", (err) => console.error("Redis Error:", err));
 const rawHistory1 = await redisClient1.get(historyKey1);
     let history1 = rawHistory1 ? JSON.parse(rawHistory1) : [];
 
-    history1.push({ role: 'user', content: prompt });
+    history1.push({ role: 'user', content: umsg });
 
   
   const result = callModel(openRouter, {
@@ -502,15 +502,16 @@ await redisClient1.set(historyKey1, JSON.stringify(history1));
 
 }
 
-main().catch(
+main().catch((err)=>
+{
 
-  res.status(201).json({
+  console.err(err);
+res.status(201).json({
     message:'Error Occured with Open Router Ai.',
     type:'error'
   })
 
-);
-
+});
 
 break;
 
