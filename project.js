@@ -449,7 +449,7 @@ askGemini(umsg);
   break;
 
 case 1:
-
+console.log('running openRouter')
 const openRouter = new OpenRouter({ apiKey: dec_ai_key });
 
 const sumTwoNumbers = tool({
@@ -510,6 +510,7 @@ main().catch(
   })
 
 );
+
 
 break;
 
