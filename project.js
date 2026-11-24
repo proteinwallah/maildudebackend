@@ -879,7 +879,7 @@ res.status(500).json({
 
 //setup Project
 app.get('/setupProject', async (req, res) => {
-  const { uuid, storeKey, aiKey, host, botName, botDesc, OrgName } = req.query;
+  const { uuid, storeKey, aiKey, host, botName, botDesc, OrgName,isOpnRt } = req.query;
 
 const enc_storeKey = cryptr.encrypt(storeKey.toString());
 const enc_aiKey = cryptr.encrypt(aiKey.toString());
@@ -931,7 +931,9 @@ try{
   botDesc varchar(250) null,
   orgName varchar(250) null,
   host varchar(250) null,
-  context text null
+  context text null,
+  is_openRouter integer not null default 0
+  
 )`
 
  const setupQueryRes = await pool.query(setupQuery);
@@ -943,8 +945,8 @@ if(setupQueryRes.command === 'CREATE')
 //Insert After Sucessfull table creation with username
 try{
  //console.log(userName)
-const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host) values($1,$2,$3,$4,$5,$6,$7)`;
-const insertProjectqueryRes = await pool.query(insertProjectquery,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host]);
+const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host,is_openRouter) values($1,$2,$3,$4,$5,$6,$7,$8)`;
+const insertProjectqueryRes = await pool.query(insertProjectquery,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt]);
 
 if(insertProjectqueryRes.rowCount === 1)
 {
@@ -1009,9 +1011,9 @@ else{
 
 try{
 
-const insertProjectquery1 = `insert into "${userName}" (uuid, aikey, storekey, botname, botdesc, orgname, host) 
-  values ($1, $2, $3, $4, $5, $6, $7)`;
-const insertProjectqueryRes1 = await pool.query(insertProjectquery1,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host]);
+const insertProjectquery1 = `insert into "${userName}" (uuid, aikey, storekey, botname, botdesc, orgname, host,is_openRouter) 
+  values ($1, $2, $3, $4, $5, $6, $7,$8)`;
+const insertProjectqueryRes1 = await pool.query(insertProjectquery1,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt]);
 
 
 if(insertProjectqueryRes1.rowCount === 1)
