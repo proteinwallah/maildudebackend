@@ -191,13 +191,7 @@ Use earlier messages for continuity. Do not recite personal details back to the 
 SITE CONTEXT
 ${context}`;
 
- const ai = new GoogleGenAI(dec_ai_key);
-//Simple format for params and returns
-//function addTwoNums ({a,b})
-//{
-//  return { result: a + b };
-//}
-
+//Scraping function for agents shared
 //Scrape url
 async function web_search1({startUrl1,maxPages1 = 1}) {
 //browser in bg invisible
@@ -301,6 +295,18 @@ catch(err1)
 
 
 }
+
+
+
+
+
+
+const ai = new GoogleGenAI(dec_ai_key);
+//Simple format for params and returns
+//function addTwoNums ({a,b})
+//{
+//  return { result: a + b };
+//}
 
 //console.log(await web_search1('https://www.omtechsoftware.com'))
 
