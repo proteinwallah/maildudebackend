@@ -122,8 +122,8 @@ try{
   const fetUnameq = 'select name from tbl_users where cltoken = $1';
   const fetUnameqRes = await pool.query(fetUnameq,[clToken]);
 
-  console.log(fetUnameqRes);
-  console.log(clToken);
+// console.log(fetUnameqRes);
+  
 
 if(fetUnameqRes.rowCount > 0)
   {
@@ -138,7 +138,9 @@ const tblUName = fetUnameqRes.rows[0].name.replace("@gmail", "")
         .replaceAll("@", "");
 
 //AGENT=UNIQUE_HOST AND DEC_AI DEC_STORE BLOCK=============================
-
+console.log(tblUName);
+console.log(clToken);
+console.log(host);
 try{
 const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openrouter from ${tblUName} where host = $1`;
 const mainEncdecQRes = await pool.query(mainEncdecQ,[host]);
@@ -541,7 +543,7 @@ catch(err)
   res.status(500).json({
     message:'An Error occured while resonating with host',
     type:'error',
-   error:err,
+   
   })
 
 }
