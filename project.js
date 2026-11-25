@@ -156,7 +156,7 @@ const botname = mainEncdecQRes.rows[0].botname;
 const botdesc = mainEncdecQRes.rows[0].botdesc;
 const orgname = mainEncdecQRes.rows[0].orgname;
 const is_openrouter = mainEncdecQRes.rows[0].is_openrouter;
-
+const agent_model = mainEncdecQRes.rows[0].agmodel;
 //System prompt
 const systemPrompt = `You are ${botname}, the assistant for ${orgname}. ${botdesc}
 Tone: friendly, polite, brief. Reply in the customer's language.
@@ -368,7 +368,7 @@ const rawHistory = await redisClient.get(historyKey);
 
 //only prompt
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
+      model: agent_model,
       config: {tools ,
          systemInstruction: [
 systemPrompt
@@ -402,7 +402,7 @@ history.push({
   });
 
 const finalResponse = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
+      model: agent_model,
       contents:history,
     });
 
@@ -484,7 +484,7 @@ const rawHistory1 = await redisClient1.get(historyKey1);
 
   
   const result = callModel(openRouter, {
-    model: 'nvidia/nemotron-3.5-super-vl:free',
+    model: agent_model,
     instructions: systemPrompt,
     input: fromChatMessages(history1),
     tools: [sumTwoNumbers],
@@ -692,11 +692,11 @@ catch(err)
 
 
 //Setup context
-app.get('/setupContext',async (req,res) =>
+app.post('/setupContext',async (req,res) =>
 {
 
 
-  const {url,uuid,botname} = req.query;
+  const {url,uuid,botname} = req.body;
 const cleanUrl = normalizeUrl(url);
 //site crawwl 
 async function CrawlSite(startUrl,maxPages) {
@@ -894,8 +894,8 @@ res.status(500).json({
 
 
 //setup Project
-app.get('/setupProject', async (req, res) => {
-  const { uuid, storeKey, aiKey, host, botName, botDesc, OrgName,isOpnRt } = req.query;
+app.post('/setupProject', async (req, res) => {
+  const { uuid, storeKey, aiKey, host, botName, botDesc, OrgName,isOpnRt,agmodel } = req.body;
 
 const enc_storeKey = cryptr.encrypt(storeKey.toString());
 const enc_aiKey = cryptr.encrypt(aiKey.toString());
@@ -948,7 +948,8 @@ try{
   orgName varchar(250) null,
   host varchar(250) null,
   context text null,
-  is_openrouter integer not null default 0
+  is_openrouter integer not null default 0,
+  agmodel varchar(250) null
   
 )`
 
@@ -961,8 +962,8 @@ if(setupQueryRes.command === 'CREATE')
 //Insert After Sucessfull table creation with username
 try{
  //console.log(userName)
-const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host,is_openrouter) values($1,$2,$3,$4,$5,$6,$7,$8)`;
-const insertProjectqueryRes = await pool.query(insertProjectquery,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt]);
+const insertProjectquery = `insert into "${userName}" (uuid,aikey,storekey,botname,botdesc,orgname,host,is_openrouter,agmodel) values($1,$2,$3,$4,$5,$6,$7,$8,$9)`;
+const insertProjectqueryRes = await pool.query(insertProjectquery,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt,agmodel]);
 
 if(insertProjectqueryRes.rowCount === 1)
 {
@@ -1027,9 +1028,9 @@ else{
 
 try{
 
-const insertProjectquery1 = `insert into "${userName}" (uuid, aikey, storekey, botname, botdesc, orgname, host,is_openRouter) 
-  values ($1, $2, $3, $4, $5, $6, $7,$8)`;
-const insertProjectqueryRes1 = await pool.query(insertProjectquery1,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt]);
+const insertProjectquery1 = `insert into "${userName}" (uuid, aikey, storekey, botname, botdesc, orgname,host,is_openRouter,agmodel) 
+  values ($1, $2, $3, $4, $5, $6, $7,$8,$9)`;
+const insertProjectqueryRes1 = await pool.query(insertProjectquery1,[uuid,enc_aiKey,enc_storeKey,botName,botDesc,OrgName,host,isOpnRt,agmodel]);
 
 
 if(insertProjectqueryRes1.rowCount === 1)
@@ -1116,6 +1117,115 @@ else{
 });
 
 
+//getProjects
+
+//setup Project
+app.post('/getProject', async (req, res) => {
+  const { uuid } = req.body;
+
+
+if(uuid === "" )
+{
+
+res.status(201).json({
+message:'Necessary feilds were found incomplete',
+type:'error'
+
+});
+
+}
+
+  try {
+
+
+
+
+    const fetchuserName5 = 'SELECT name FROM tbl_users WHERE uuid = $1';
+    
+    // Fixed: pool.query instead of invalid pool.await
+    const fetchuserNameRes5 = await pool.query(fetchuserName5, [uuid]);
+
+    if (fetchuserNameRes5.rows.length > 0) {
+      
+      const rawName5 = fetchuserNameRes5.rows[0].name;
+      const userName5 = rawName5
+        .replace("@gmail", "")
+        .replace("@hotmail", "")
+        .replace("@service", "")
+        .replace("@yahoo", "")
+        .replace(".com", "")
+        .replaceAll("_", "")
+        .replaceAll(".", "")
+        .replaceAll("@", "");
+
+
+//Next step setup the project tbl
+
+try{
+  const fetbotQuery = `select id,botname,orgname,host from ${userName5}`;
+
+ const fetbotQueryRes = await pool.query(fetbotQuery);
+if(fetbotQueryRes.rows.length > 0)
+{
+
+res.status(201).json({
+message:fetbotQueryRes.rows,
+type:'success',
+})
+
+}
+
+else{
+  res.status(201).json({
+    message:'Error fetching your projects',
+    type:'error'
+  })
+}
+
+
+}
+
+catch(err)
+{
+
+  if (err.code === '42P01') {
+    return res.status(201).json({
+      message: 'Project table does not exist',
+      type: 'default',
+ //     code: err.code
+    });
+  }
+//Da real error for fetching
+
+
+res.status(500).json({
+message:'Error fetching project',
+type:'error'  
+})
+}
+
+      
+      
+      } else {
+      res.status(201).json({
+        message: 'cant find user or invalid session',
+        type: 'error'
+      });
+    }
+  } 
+  catch (err) {
+   // console.error('Error setting up project:', err);
+
+
+    res.status(500).json({
+      message: 'Internal server error',
+      type: 'error'
+    });
+  }
+});
+
+
+
 app.get('/getgemmodels', async (req, res) => {
   try {
     const { search } = req.query;
@@ -1151,6 +1261,8 @@ app.get('/getgemmodels', async (req, res) => {
     });
   }
 });
+
+
 
 
 
