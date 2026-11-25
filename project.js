@@ -1116,6 +1116,42 @@ else{
 });
 
 
+app.get('/getgemmodels', async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const apiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`
+    );
+
+    if (!apiRes.ok) {
+      return res.status(500).json({
+        message: 'Error occured',
+        type: 'error',
+      });
+    }
+
+    const data = await apiRes.json();
+    let models = data.models || [];
+
+    if (search) {
+      const q = search.toLowerCase();
+      models = models.filter(
+        (m) =>
+          m.name.toLowerCase().includes(q) ||
+          (m.displayName && m.displayName.toLowerCase().includes(q))
+      );
+    }
+
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error occured',
+      type: 'error',
+    });
+  }
+});
+
 
 
 app.listen(4000, () => {
