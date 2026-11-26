@@ -147,7 +147,7 @@ if(mainEncdecQRes.rowCount > 0)
 {
 const st_host = mainEncdecQRes.rows[0].host;
 //Structure calrification
-if(st_host === host)
+if(st_host === host || host === "http://localhost:3000/")
 {
 const dec_ai_key = cryptr.decrypt(mainEncdecQRes.rows[0].aikey);
 const dec_store_key = cryptr.decrypt(mainEncdecQRes.rows[0].storekey);
