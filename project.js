@@ -140,7 +140,7 @@ const tblUName = fetUnameqRes.rows[0].name.replace("@gmail", "")
 //AGENT=UNIQUE_HOST AND DEC_AI DEC_STORE BLOCK=============================
 
 try{
-const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openrouter from ${tblUName} where host = $1`;
+const mainEncdecQ = `select botname,botdesc,host,aikey,storekey,orgname,context,is_openrouter,agmodel from ${tblUName} where host = $1`;
 const mainEncdecQRes = await pool.query(mainEncdecQ,[host]);
 
 if(mainEncdecQRes.rowCount > 0)
