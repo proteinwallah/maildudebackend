@@ -1176,10 +1176,13 @@ type:'success',
 }
 
 else{
-  res.status(201).json({
-    message:'Error fetching your projects',
-    type:'error'
-  })
+ 
+ return res.status(201).json({
+      message: 'No Projects',
+      type: 'default',
+ //     code: err.code
+    });
+
 }
 
 
@@ -1190,7 +1193,7 @@ catch(err)
 
   if (err.code === '42P01') {
     return res.status(201).json({
-      message: 'Project table does not exist',
+      message: 'No Projects',
       type: 'default',
  //     code: err.code
     });
