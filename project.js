@@ -157,6 +157,7 @@ const botdesc = mainEncdecQRes.rows[0].botdesc;
 const orgname = mainEncdecQRes.rows[0].orgname;
 const is_openrouter = mainEncdecQRes.rows[0].is_openrouter;
 const agent_model = mainEncdecQRes.rows[0].agmodel;
+console.log(agent_model);
 //System prompt
 const systemPrompt = `You are ${botname}, the assistant for ${orgname}. ${botdesc}
 Tone: friendly, polite, brief. Reply in the customer's language.
@@ -346,7 +347,7 @@ const tools = [
   },
 ];
 
-console.log(agent_model);
+
 
  async function askGemini(prompt) {
   
